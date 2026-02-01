@@ -119,7 +119,7 @@ export const useThaiAddress = () => {
     setSelected((prev) => ({
       ...prev,
       subDistrictId: id,
-      zipCode: subDist?.zip_code || "",
+      zipCode: subDist?.zip_code ? String(subDist.zip_code) : "", // 🔥 แปลงเป็น string
     }));
   };
 
@@ -162,7 +162,7 @@ export const useThaiAddress = () => {
         setSelected(prev => ({
           ...prev,
           subDistrictId: String(subDist.id),
-          zipCode: subDist.zip_code || zipCode || "",
+          zipCode: subDist.zip_code ? String(subDist.zip_code) : (zipCode || ""), // 🔥 แปลงเป็น string
         }));
       }, 100);
     }, 100);
