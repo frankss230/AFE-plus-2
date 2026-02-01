@@ -19,6 +19,7 @@ export const userEditSchema = z.object({
   users_sname: z.string().min(1, "กรุณากรอกนามสกุล"),
   
   users_pin: z.string()
+    .min(1, "กรุณากรอก PIN")
     .length(4, "PIN ต้องมี 4 หลัก")
     .regex(/^[0-9]+$/, "ต้องเป็นตัวเลขเท่านั้น"),
 

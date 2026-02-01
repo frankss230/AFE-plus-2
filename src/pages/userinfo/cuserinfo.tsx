@@ -95,7 +95,7 @@ const Cuserinfo = () => {
                         reset({
                             users_fname: userData.users_fname,
                             users_sname: userData.users_sname,
-                            users_pin: userData.users_pin,
+                            users_pin: String(userData.users_pin), // 🔥 แปลง number → string
                             users_number: userData.users_number,
                             users_moo: userData.users_moo,
                             users_road: userData.users_road,
@@ -146,7 +146,7 @@ const Cuserinfo = () => {
             const data = {
                 users_fname   : formData.users_fname,
                 users_sname   : formData.users_sname,
-                users_pin     : Number(formData.users_pin),
+                users_pin     : Number(formData.users_pin), // 🔥 แปลง string → number
                 users_number  : formData.users_number,
                 users_moo     : formData.users_moo,
                 users_road    : formData.users_road,
