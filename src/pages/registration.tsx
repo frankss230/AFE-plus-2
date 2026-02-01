@@ -7,6 +7,7 @@ import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import ButtonState from '@/components/Button/ButtonState';
 import InputLabel from '@/components/Form/InputLabel';
+import SelectAddress from '@/components/Form/SelectAddress'; // 🔥 Import component ใหม่
 import ModalAlert from '@/components/Modals/ModalAlert';
 import axios from 'axios';
 import md5 from 'md5';
@@ -14,8 +15,10 @@ import md5 from 'md5';
 // Import Validation
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-// อย่าลืมเช็ค path ให้ถูกต้อง
 import { registrationSchema, RegistrationFormData } from '@/components/validations/registrationSchema'; 
+
+// 🔥 Import Hook ใหม่
+import { useThaiAddress } from '@/hooks/useThaiAddress';
 
 import styles from '@/styles/page.module.css';
 
@@ -30,15 +33,19 @@ const Registration = () => {
     const [displayName, setDisplayName] = useState<string>("");
     const [dataUser, setDataUser] = useState<UserData>({ isLogin: true, data: null });
 
+    // 🔥 เรียกใช้ Thai Address Hook
+    const { data, status, selected, actions, getNames, getLabel } = useThaiAddress();
+
     const { 
         register, 
         handleSubmit, 
         reset, 
-        watch, // 🔥 1. เรียกใช้ watch
+        watch,
+        setValue, // 🔥 เพื่อ sync ค่ากับ form
         formState: { errors, isSubmitting } 
     } = useForm<RegistrationFormData>({
         resolver: zodResolver(registrationSchema),
-        mode: "onChange", // แนะนำ: ให้ตรวจสอบทันทีที่พิมพ์ (Real-time Validation)
+        mode: "onChange",
         defaultValues: {
             users_pin: "",
             users_tel1: "",
@@ -46,11 +53,24 @@ const Registration = () => {
         }
     });
 
-    // 🔥 2. ฟังก์ชันเช็คว่าควรขึ้น "สีเขียว" หรือไม่
-    // เงื่อนไข: (ไม่มี Error) AND (มีข้อมูลพิมพ์อยู่)
+    // 🔥 Sync ค่าจาก dropdown ไปยัง form
+    useEffect(() => {
+        if (selected.provinceId) {
+            setValue('users_province', getNames.getProvinceName(selected.provinceId));
+        }
+        if (selected.districtId) {
+            setValue('users_amphur', getNames.getDistrictName(selected.districtId));
+        }
+        if (selected.subDistrictId) {
+            setValue('users_tubon', getNames.getSubDistrictName(selected.subDistrictId));
+        }
+        if (selected.zipCode) {
+            setValue('users_postcode', selected.zipCode);
+        }
+    }, [selected, setValue, getNames]);
+
     const isFieldValid = (name: keyof RegistrationFormData) => {
         const value = watch(name);
-        // เช็คว่าค่าไม่ว่าง (undefined, null, "") และ ไม่มี error
         return !errors[name] && !!value && value.toString().trim() !== "";
     };
 
@@ -93,6 +113,16 @@ const Registration = () => {
                     users_postcode: userData.users_postcode,
                     users_tel1: userData.users_tel1,
                 });
+
+                // 🔥 Set initial address values for dropdown
+                if (userData.users_province && userData.users_amphur && userData.users_tubon) {
+                    actions.setInitialValues(
+                        userData.users_province,
+                        userData.users_amphur,
+                        userData.users_tubon,
+                        userData.users_postcode
+                    );
+                }
 
             } else {
                 setDataUser({ isLogin: false, data: null })
@@ -146,7 +176,6 @@ const Registration = () => {
                 <h1 className="py-2">ลงทะเบียน</h1>
             </div>
             <div className="px-5">
-                {/* ❌ สำคัญมาก: ต้องไม่มี validated={...} ตรงนี้ */}
                 <Form noValidate onSubmit={handleSubmit(onSubmit)}>
                     
                     <Form.Group>
@@ -161,7 +190,7 @@ const Registration = () => {
                         {...register("users_fname")}
                         isInvalid={!!errors.users_fname}
                         errorMessage={errors.users_fname?.message}
-                        isValid={isFieldValid("users_fname")} // 🔥 เพิ่ม isValid
+                        isValid={isFieldValid("users_fname")}
                     />
 
                     <InputLabel 
@@ -172,7 +201,7 @@ const Registration = () => {
                         {...register("users_sname")}
                         isInvalid={!!errors.users_sname}
                         errorMessage={errors.users_sname?.message}
-                        isValid={isFieldValid("users_sname")} // 🔥 เพิ่ม isValid
+                        isValid={isFieldValid("users_sname")}
                     />
 
                     {
@@ -186,7 +215,7 @@ const Registration = () => {
                                     {...register("users_passwd")}
                                     isInvalid={!!errors.users_passwd}
                                     errorMessage={errors.users_passwd?.message}
-                                    isValid={isFieldValid("users_passwd")} // 🔥
+                                    isValid={isFieldValid("users_passwd")}
                                 />
                                 <InputLabel 
                                     label="รหัสผ่าน (อีกครั้ง)" 
@@ -196,7 +225,7 @@ const Registration = () => {
                                     {...register("users_passwd_comfirm")}
                                     isInvalid={!!errors.users_passwd_comfirm}
                                     errorMessage={errors.users_passwd_comfirm?.message}
-                                    isValid={isFieldValid("users_passwd_comfirm")} // 🔥
+                                    isValid={isFieldValid("users_passwd_comfirm")}
                                 />
                             </>
                         )
@@ -212,7 +241,7 @@ const Registration = () => {
                         {...register("users_pin")}
                         isInvalid={!!errors.users_pin}
                         errorMessage={errors.users_pin?.message}
-                        isValid={isFieldValid("users_pin")} // 🔥
+                        isValid={isFieldValid("users_pin")}
                     />
 
                     <InputLabel 
@@ -221,7 +250,7 @@ const Registration = () => {
                         placeholder="123/12" 
                         disabled={!!dataUser.data} 
                         {...register("users_number")} 
-                        isValid={isFieldValid("users_number")} // 🔥 (Optional ถ้ากรอกแล้วถึงจะเขียว)
+                        isValid={isFieldValid("users_number")}
                     />
                     <InputLabel 
                         label="หมู่" 
@@ -240,36 +269,57 @@ const Registration = () => {
                         isValid={isFieldValid("users_road")}
                     />
                     
-                    <InputLabel 
-                        label="ตำบล" 
-                        id="users_tubon" 
-                        placeholder="กรอกตำบล" 
-                        disabled={!!dataUser.data} 
-                        {...register("users_tubon")}
-                        isInvalid={!!errors.users_tubon}
-                        errorMessage={errors.users_tubon?.message}
-                        isValid={isFieldValid("users_tubon")} // 🔥
-                    />
-                    <InputLabel 
-                        label="อำเภอ" 
-                        id="users_amphur" 
-                        placeholder="กรอกอำเภอ" 
-                        disabled={!!dataUser.data} 
-                        {...register("users_amphur")}
-                        isInvalid={!!errors.users_amphur}
-                        errorMessage={errors.users_amphur?.message}
-                        isValid={isFieldValid("users_amphur")} // 🔥
-                    />
-                    <InputLabel 
-                        label="จังหวัด" 
-                        id="users_province" 
-                        placeholder="กรอกจังหวัด" 
-                        disabled={!!dataUser.data} 
-                        {...register("users_province")}
-                        isInvalid={!!errors.users_province}
-                        errorMessage={errors.users_province?.message}
-                        isValid={isFieldValid("users_province")} // 🔥
-                    />
+                    {/* 🔥 เปลี่ยนจาก Input เป็น Dropdown */}
+                    {status.loading ? (
+                        <p className="text-muted">กำลังโหลดข้อมูลจังหวัด...</p>
+                    ) : (
+                        <>
+                            <SelectAddress
+                                label="จังหวัด"
+                                id="users_province"
+                                value={selected.provinceId}
+                                options={data.provinces}
+                                onChange={actions.setProvince}
+                                disabled={!!dataUser.data || status.loading || !!status.error}
+                                placeholder="เลือกจังหวัด"
+                                isInvalid={!!errors.users_province}
+                                errorMessage={errors.users_province?.message}
+                                isValid={isFieldValid("users_province")}
+                                required
+                                getLabel={getLabel}
+                            />
+
+                            <SelectAddress
+                                label="อำเภอ"
+                                id="users_amphur"
+                                value={selected.districtId}
+                                options={data.districts}
+                                onChange={actions.setDistrict}
+                                disabled={!!dataUser.data || !selected.provinceId}
+                                placeholder={!selected.provinceId ? "เลือกจังหวัดก่อน" : "เลือกอำเภอ"}
+                                isInvalid={!!errors.users_amphur}
+                                errorMessage={errors.users_amphur?.message}
+                                isValid={isFieldValid("users_amphur")}
+                                required
+                                getLabel={getLabel}
+                            />
+
+                            <SelectAddress
+                                label="ตำบล"
+                                id="users_tubon"
+                                value={selected.subDistrictId}
+                                options={data.subDistricts}
+                                onChange={actions.setSubDistrict}
+                                disabled={!!dataUser.data || !selected.districtId}
+                                placeholder={!selected.districtId ? "เลือกอำเภอก่อน" : "เลือกตำบล"}
+                                isInvalid={!!errors.users_tubon}
+                                errorMessage={errors.users_tubon?.message}
+                                isValid={isFieldValid("users_tubon")}
+                                required
+                                getLabel={getLabel}
+                            />
+                        </>
+                    )}
                     
                     <InputLabel 
                         label="รหัสไปรษณีย์" 
@@ -277,11 +327,12 @@ const Registration = () => {
                         placeholder="กรอกรหัสไปรษณีย์" 
                         type="tel" 
                         max={5}
-                        disabled={!!dataUser.data} 
+                        disabled={!!dataUser.data}
                         {...register("users_postcode")}
                         isInvalid={!!errors.users_postcode}
                         errorMessage={errors.users_postcode?.message}
-                        isValid={isFieldValid("users_postcode")} // 🔥
+                        isValid={isFieldValid("users_postcode")}
+                        readOnly // 🔥 ทำให้เป็น read-only เพราะจะถูกกรอกอัตโนมัติ
                     />
                     
                     <InputLabel 
@@ -294,7 +345,7 @@ const Registration = () => {
                         {...register("users_tel1")}
                         isInvalid={!!errors.users_tel1}
                         errorMessage={errors.users_tel1?.message}
-                        isValid={isFieldValid("users_tel1")} // 🔥
+                        isValid={isFieldValid("users_tel1")}
                     />
 
                     {
