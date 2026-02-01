@@ -105,16 +105,6 @@ const Cuserinfo = () => {
                             users_postcode: userData.users_postcode,
                             users_tel1: userData.users_tel1,
                         });
-
-                        // 🔥 Set initial address values for dropdown
-                        if (userData.users_province && userData.users_amphur && userData.users_tubon) {
-                            actions.setInitialValues(
-                                userData.users_province,
-                                userData.users_amphur,
-                                userData.users_tubon,
-                                userData.users_postcode
-                            );
-                        }
                     } else {
                         setDataUser({ isLogin: false, data: null })
                     }
@@ -129,6 +119,23 @@ const Cuserinfo = () => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [router.query.auToken])
+
+    // 🔥 useEffect แยกสำหรับ set dropdown เมื่อข้อมูลจังหวัดโหลดเสร็จแล้ว
+    useEffect(() => {
+        if (dataUser.data && data.provinces.length > 0) {
+            const userData = dataUser.data;
+            // Set initial address values for dropdown
+            if (userData.users_province && userData.users_amphur && userData.users_tubon) {
+                actions.setInitialValues(
+                    userData.users_province,
+                    userData.users_amphur,
+                    userData.users_tubon,
+                    userData.users_postcode
+                );
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dataUser.data, data.provinces.length])
 
     const onSubmit = async (formData: UserEditFormData) => {
         try {
@@ -244,6 +251,10 @@ const Cuserinfo = () => {
                         <p className="text-muted">กำลังโหลดข้อมูลจังหวัด...</p>
                     ) : (
                         <>
+                            <input type="hidden" {...register("users_province")} />
+                            <input type="hidden" {...register("users_amphur")} />
+                            <input type="hidden" {...register("users_tubon")} />
+                            
                             <SelectAddress
                                 label="จังหวัด"
                                 id="users_province"
