@@ -321,7 +321,7 @@ const ElderlyRegistration = () => {
                         <div className="d-flex justify-content-around">
                             {
                                 masterGender.length > 0 && masterGender.map((item: any) => {
-                                    const genderId = Number(item.gender_id); // แปลงเป็น number
+                                    const genderId = Number(item.gender_id);
                                     return (
                                         <Form.Check
                                             key={`gender-${genderId}`}
@@ -330,9 +330,10 @@ const ElderlyRegistration = () => {
                                             id={`gender-${genderId}`}
                                             value={genderId}
                                             disabled={!!dataUser.data}
-                                            {...register("gender_id", { 
-                                                valueAsNumber: true  // 🔥 แปลงเป็น number อัตโนมัติ
-                                            })}
+                                            {...register("gender_id")}
+                                            onChange={(e) => {
+                                                setValue("gender_id", Number(e.target.value)); // 🔥 แปลงเป็น number
+                                            }}
                                         />
                                     )
                                 })
@@ -350,7 +351,7 @@ const ElderlyRegistration = () => {
                         <div className="px-4">
                             {
                                 masterMarry.length > 0 && masterMarry.map((item: any) => {
-                                    const marryId = Number(item.marry_id); // แปลงเป็น number
+                                    const marryId = Number(item.marry_id);
                                     return (
                                         <Form.Check
                                             key={`marry-${marryId}`}
@@ -360,9 +361,10 @@ const ElderlyRegistration = () => {
                                             id={`marry-${marryId}`}
                                             value={marryId}
                                             disabled={!!dataUser.data}
-                                            {...register("marry_id", { 
-                                                valueAsNumber: true  // 🔥 แปลงเป็น number อัตโนมัติ
-                                            })}
+                                            {...register("marry_id")}
+                                            onChange={(e) => {
+                                                setValue("marry_id", Number(e.target.value)); // 🔥 แปลงเป็น number
+                                            }}
                                         />
                                     )
                                 })
