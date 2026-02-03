@@ -55,16 +55,16 @@ export const userEditSchema = z.object({
   users_road: z.string().optional(),
   
   users_tubon: z.string({
-    required_error: "กรุณากรอกตำบล",
-  }).min(1, "กรุณากรอกตำบล"),
+    required_error: "กรุณาเลือกตำบล",
+  }).min(1, "กรุณาเลือกตำบล"),
   
   users_amphur: z.string({
-    required_error: "กรุณากรอกอำเภอ",
-  }).min(1, "กรุณากรอกอำเภอ"),
+    required_error: "กรุณาเลือกอำเภอ",
+  }).min(1, "กรุณาเลือกอำเภอ"),
   
   users_province: z.string({
-    required_error: "กรุณากรอกจังหวัด",
-  }).min(1, "กรุณากรอกจังหวัด"),
+    required_error: "กรุณาเลือกจังหวัด",
+  }).min(1, "กรุณาเลือกจังหวัด"),
 
   users_postcode: zipCodeRule, 
   users_tel1: phoneRule,

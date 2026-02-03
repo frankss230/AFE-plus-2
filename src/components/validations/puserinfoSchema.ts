@@ -71,16 +71,16 @@ export const puserinfoSchema = z.object({
   takecare_road: z.string().optional(),
   
   takecare_tubon: z.string({
-    required_error: "กรุณากรอกตำบล",
-  }).min(1, "กรุณากรอกตำบล"),
+    required_error: "กรุณาเลือกตำบล",
+  }).min(1, "กรุณาเลือกตำบล"),
   
   takecare_amphur: z.string({
-    required_error: "กรุณากรอกอำเภอ",
-  }).min(1, "กรุณากรอกอำเภอ"),
+    required_error: "กรุณาเลือกอำเภอ",
+  }).min(1, "กรุณาเลือกอำเภอ"),
   
   takecare_province: z.string({
-    required_error: "กรุณากรอกจังหวัด",
-  }).min(1, "กรุณากรอกจังหวัด"),
+    required_error: "กรุณาเลือกจังหวัด",
+  }).min(1, "กรุณาเลือกจังหวัด"),
 
   takecare_postcode: zipCodeRule, 
   takecare_tel1: phoneRule,

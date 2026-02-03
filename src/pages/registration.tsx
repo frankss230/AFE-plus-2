@@ -449,7 +449,7 @@ const Registration = () => {
                         max={5}
                         disabled={!!dataUser.data}
                         {...register("users_postcode")}
-                        //isInvalid={!!errors.users_postcode} read-only ไม่ควรมีerror message
+                        isInvalid={!!errors.users_postcode}
                         isValid={isFieldValid("users_postcode")}
                         readOnly // 🔥 ทำให้เป็น read-only เพราะจะถูกกรอกอัตโนมัติ
                         required
