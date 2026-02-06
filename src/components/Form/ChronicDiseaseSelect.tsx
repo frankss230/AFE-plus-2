@@ -232,6 +232,7 @@ const ChronicDiseaseSelect: React.FC<ChronicDiseaseSelectProps> = ({
         isSearchable
         isDisabled={disabled}
         value={selected}
+<<<<<<< HEAD
         options={allowCustom ? options.filter(opt => opt.value !== "อื่นๆ") : options}
         placeholder={placeholder}
         filterOption={(candidate, input) => {
@@ -242,6 +243,10 @@ const ChronicDiseaseSelect: React.FC<ChronicDiseaseSelectProps> = ({
           }
           return candidate.label.includes(term) || candidate.value.includes(term);
         }}
+=======
+        options={options}
+        placeholder={placeholder}
+>>>>>>> 267c196 (แก้แบบฟอร์มโรคประจำตัว)
         inputValue={inputValue}
         onInputChange={(value) => {
           setInputValue(value);
@@ -351,4 +356,8 @@ const ChronicDiseaseSelect: React.FC<ChronicDiseaseSelectProps> = ({
   );
 };
 
+<<<<<<< HEAD
 export default ChronicDiseaseSelect;
+=======
+export default ChronicDiseaseSelect;
+>>>>>>> 267c196 (แก้แบบฟอร์มโรคประจำตัว)
