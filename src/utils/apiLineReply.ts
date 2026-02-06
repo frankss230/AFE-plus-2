@@ -7,7 +7,7 @@ const LINE_PUSH_MESSAGING_API = 'https://api.line.me/v2/bot/message/push';
 const LINE_PROFILE_API = 'https://api.line.me/v2/bot/profile';
 const LINE_HEADER = {
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${process.env.CHANNEL_ACCESS_TOKEN_LINE}`,
+    Authorization: `Bearer ${process.env.CHANNEL_ACCESS_TOKEN_LINE}`, // Replace with your LINE Channel Access Token
 };
 
 interface ReplyMessage {
@@ -125,7 +125,6 @@ interface ReplyLocationData {
     safezoneData?: any;
     locationData?: any;
 }
-
 // helper ทำแถวแบบ baseline (label : value) และรองรับกำหนดสี value
 const baseline = (label: string, value: string, valueColor?: string) => ({
     type: 'box',
@@ -135,7 +134,6 @@ const baseline = (label: string, value: string, valueColor?: string) => ({
         { type: 'text', text: value, size: 'sm', color: valueColor || '#111111', flex: 5, wrap: true }
     ]
 });
-
 const layoutBoxBaseline = (label: string, text: string, flex1 = 2, flex2 = 5) => {
     return {
         type: "box",
@@ -146,8 +144,7 @@ const layoutBoxBaseline = (label: string, text: string, flex1 = 2, flex2 = 5) =>
                 text: label,
                 flex: flex1,
                 size: "sm",
-                color: "#AAAAAA",
-                wrap: true
+                color: "#AAAAAA"
             },
             {
                 type: "text",
@@ -436,7 +433,6 @@ export const replyMenuBorrowequipment = async ({
         }
     }
 }
-
 export const replyConnection = async ({
     replyToken,
     userData,
@@ -491,7 +487,7 @@ export const replyConnection = async ({
                                     spacing: "sm",
                                     contents: [
                                         layoutBoxBaseline("ชื่อ-สกุล", `${userData.users_fname} ${userData.users_sname}`, 4, 5),
-                                        layoutBoxBaseline("เบอร์โทร", `${userData.users_tel1 || '-'}`, 3, 6),
+                                        layoutBoxBaseline("เบอร์โทร", `${userData.users_tel1 || '-'}`, 4, 5),
                                     ]
 
                                 },
@@ -510,7 +506,7 @@ export const replyConnection = async ({
                                     spacing: "sm",
                                     contents: [
                                         layoutBoxBaseline("ชื่อ-สกุล", `${userTakecarepersonData.takecare_fname} ${userTakecarepersonData.takecare_sname}`, 4, 5),
-                                        layoutBoxBaseline("เบอร์โทร", `${userTakecarepersonData.takecare_tel1 || '-'}`, 3, 6),
+                                        layoutBoxBaseline("เบอร์โทร", `${userTakecarepersonData.takecare_tel1 || '-'}`, 4, 5),
                                     ]
 
                                 },
@@ -524,6 +520,17 @@ export const replyConnection = async ({
                                         layoutBoxBaseline("PIN", `${userData.users_pin}`),
                                     ]
                                 },
+                                // {
+                                //     type  : "button",
+                                //     style : "primary",
+                                //     height: "sm",
+                                //     margin: "xxl",
+                                //     action: {
+                                //         type : "uri",
+                                //         label: "ตั้งค่าการเชื่อมต่อนาฬิกา",
+                                //         uri  : `${WEB_API}/connection?auToken=${userData.users_line_id}`
+                                //     }
+                                // },
                             ]
                         }
                     }
@@ -537,7 +544,6 @@ export const replyConnection = async ({
         }
     }
 }
-
 export const replyLocation = async ({
     replyToken,
     userData,
@@ -574,12 +580,13 @@ export const replyLocation = async ({
         const tempVal = lastTemp ? Number(lastTemp.temperature_value).toFixed(1) : '—';
         const hrVal = lastHR ? String(Number(lastHR.bpm)) : '—';
 
-        const tempColor = lastTemp?.status === 1 ? '#E11D48' : '#0EA5E9';
-        const hrColor = lastHR?.status === 1 ? '#E11D48' : '#10B981';
+        const tempColor = lastTemp?.status === 1 ? '#E11D48' : '#0EA5E9'; // แดงถ้าผิดปกติ, ฟ้าเมื่อปกติ
+        const hrColor = lastHR?.status === 1 ? '#E11D48' : '#10B981';   // แดงถ้าผิดปกติ, เขียวเมื่อปกติ
 
         const requestData = {
             replyToken,
             messages: [
+                // แผนที่ตำแหน่ง (ข้อความประเภท location เพิ่มอะไรไม่ได้)
                 {
                     type: 'location',
                     title: `ตำแหน่งปัจจุบันของผู้ที่มีภาวะพึ่งพิง ${userTakecarepersonData.takecare_fname} ${userTakecarepersonData.takecare_sname}`,
@@ -587,6 +594,7 @@ export const replyLocation = async ({
                     latitude,
                     longitude
                 },
+                // Flex การ์ดรายละเอียด + Vitals ดีไซน์ใหม่
                 {
                     type: 'flex',
                     altText: 'ข้อมูลตำแหน่งและสุขภาพ',
@@ -616,6 +624,8 @@ export const replyLocation = async ({
                                     ]
                                 },
                                 { type: 'separator', margin: 'md' },
+
+                                // แถว KPI vitals (สวยและอ่านง่าย)
                                 {
                                     type: 'box',
                                     layout: 'horizontal',
@@ -625,6 +635,8 @@ export const replyLocation = async ({
                                         kpiBox('ชีพจร', hrVal, 'bpm', hrColor)
                                     ]
                                 },
+
+                                // ปุ่มต่าง ๆ
                                 {
                                     type: 'box',
                                     layout: 'vertical',
@@ -647,6 +659,7 @@ export const replyLocation = async ({
                                                     text: 'ไม่มีข้อมูลเบอร์โทรศัพท์ของผู้มีภาวะพึ่งพิง'
                                                 }
                                         },
+
                                         {
                                             type: 'button',
                                             style: 'primary',
@@ -681,11 +694,13 @@ export const replySetting = async ({
     heartrateSettingData
 }: ReplySettingData & { temperatureSettingData?: any }) => {
     try {
+        // ค่า default
         let r1 = 0;
         let r2 = 0;
         let idsafezone = 0;
         let maxTemperature = 0;
         let idSetting = 0;
+        //let minBpm = 0;
         let maxBpm = 0;
         let idSettingHR = 0;
 
@@ -700,6 +715,7 @@ export const replySetting = async ({
             idSetting = temperatureSettingData.setting_id || 0;
         }
         if (heartrateSettingData) {
+            // minBpm = heartrateSettingData.min_bpm || 50;
             maxBpm = heartrateSettingData.max_bpm || 120;
             idSettingHR = heartrateSettingData.id || 0;
         }
@@ -738,7 +754,7 @@ export const replySetting = async ({
                                             type: "box",
                                             layout: "baseline",
                                             contents: [
-                                                { type: "text", text: "ชื่อ", flex: 2, weight: "bold", wrap: true },
+                                                { type: "text", text: "ชื่อ", flex: 2, weight: "bold" },
                                                 { type: "text", text: `${userTakecarepersonData.takecare_fname} ${userTakecarepersonData.takecare_sname}`, flex: 3, wrap: true }
                                             ]
                                         },
@@ -746,32 +762,32 @@ export const replySetting = async ({
                                             type: "box",
                                             layout: "baseline",
                                             contents: [
-                                                { type: "text", text: "รัศมี ชั้นที่ 1", flex: 2, weight: "bold", wrap: true },
-                                                { type: "text", text: `${r1} เมตร`, flex: 3, wrap: true }
+                                                { type: "text", text: "รัศมี ชั้นที่ 1", flex: 2, weight: "bold" },
+                                                { type: "text", text: `${r1} เมตร`, flex: 3 }
                                             ]
                                         },
                                         {
                                             type: "box",
                                             layout: "baseline",
                                             contents: [
-                                                { type: "text", text: "รัศมี ชั้นที่ 2", flex: 2, weight: "bold", wrap: true },
-                                                { type: "text", text: `${r2} เมตร`, flex: 3, wrap: true }
+                                                { type: "text", text: "รัศมี ชั้นที่ 2", flex: 2, weight: "bold" },
+                                                { type: "text", text: `${r2} เมตร`, flex: 3 }
                                             ]
                                         },
                                         {
                                             type: "box",
                                             layout: "baseline",
                                             contents: [
-                                                { type: "text", text: "อุณหภูมิ", flex: 2, weight: "bold", wrap: true },
-                                                { type: "text", text: `${maxTemperature} องศา`, flex: 3, wrap: true }
+                                                { type: "text", text: "อุณหภูมิ", flex: 2, weight: "bold" },
+                                                { type: "text", text: `${maxTemperature} องศา`, flex: 3 }
                                             ]
                                         },
                                         {
                                             type: "box",
                                             layout: "baseline",
                                             contents: [
-                                                { type: "text", text: "ชีพจร", flex: 2, weight: "bold", wrap: true },
-                                                { type: "text", text: `${maxBpm} ครั้งต่อนาที`, flex: 3, wrap: true }
+                                                { type: "text", text: "ชีพจร", flex: 2, weight: "bold" },
+                                                { type: "text", text: `${maxBpm} ครั้งต่อนาที`, flex: 3 }
                                             ]
                                         }
                                     ]
@@ -826,13 +842,13 @@ export const replySetting = async ({
         }
     }
 };
-
 export const replyUserInfo = async ({
     replyToken,
     userData,
     userTakecarepersonData
 }: ReplyUserData) => {
     try {
+        // const profile = await getUserProfile(userData.users_line_id);
         let contentTakecareperson = [
             layoutBoxBaseline("ข้อมูล", 'ยังไม่ได้เพิ่มข้อมูลผู้มีภาวะพึ่งพิง'),
         ]
@@ -847,8 +863,8 @@ export const replyUserInfo = async ({
                 layoutBoxBaseline("อำเภอ", `${userTakecarepersonData.takecare_amphur || '-'}`, 4, 5),
                 layoutBoxBaseline("จังหวัด", `${userTakecarepersonData.takecare_province || '-'}`, 4, 5),
                 layoutBoxBaseline("รหัสไปรษณีย์", `${userTakecarepersonData.takecare_postcode || '-'}`, 4, 5),
-                layoutBoxBaseline("เบอร์โทรศัพท์มือถือ", `${userTakecarepersonData.takecare_tel1 || '-'}`, 3, 6),
-                layoutBoxBaseline("เบอร์โทรศัพท์บ้าน", `${userTakecarepersonData.takecare_tel_home || '-'}`, 3, 6),
+                layoutBoxBaseline("เบอร์โทรศัพท์มือถือ", `${userTakecarepersonData.takecare_tel1 || '-'}`, 4, 5),
+                layoutBoxBaseline("เบอร์โทรศัพท์บ้าน", `${userTakecarepersonData.takecare_tel_home || '-'}`, 4, 5),
                 layoutBoxBaseline("โรคประจำตัว", `${userTakecarepersonData.takecare_disease || '-'}`, 4, 5),
                 layoutBoxBaseline("ยาที่ใช้ประจำ", `${userTakecarepersonData.takecare_drug || '-'}`, 4, 5),
             ]
@@ -886,6 +902,7 @@ export const replyUserInfo = async ({
                                     wrap: true,
                                     margin: "sm"
                                 },
+
                                 {
                                     type: "box",
                                     layout: "vertical",
@@ -899,9 +916,10 @@ export const replyUserInfo = async ({
                                         layoutBoxBaseline("อำเภอ", `${userData.users_amphur || '-'}`, 4, 5),
                                         layoutBoxBaseline("จังหวัด", `${userData.users_province || '-'}`, 4, 5),
                                         layoutBoxBaseline("รหัสไปรษณีย์", `${userData.users_postcode || '-'}`, 4, 5),
-                                        layoutBoxBaseline("เบอร์โทรศัพท์มือถือ", `${userData.users_tel1 || '-'}`, 3, 6),
-                                        layoutBoxBaseline("เบอร์โทรศัพท์บ้าน", `${userData.users_tel_home || '-'}`, 3, 6),
+                                        layoutBoxBaseline("เบอร์โทรศัพท์มือถือ", `${userData.users_tel1 || '-'}`, 4, 5),
+                                        layoutBoxBaseline("เบอร์โทรศัพท์บ้าน", `${userData.users_tel_home || '-'}`, 4, 5),
                                     ]
+
                                 },
                                 {
                                     type: "separator",
@@ -915,6 +933,7 @@ export const replyUserInfo = async ({
                                     wrap: true,
                                     margin: "sm"
                                 },
+
                                 {
                                     type: "box",
                                     layout: "vertical",
@@ -923,7 +942,10 @@ export const replyUserInfo = async ({
                                     contents: [
                                         ...contentTakecareperson
                                     ]
+
                                 },
+
+
                                 {
                                     type: "button",
                                     style: "primary",
@@ -934,6 +956,7 @@ export const replyUserInfo = async ({
                                         label: "ตั้งค่าข้อมูลผู้ดูแล",
                                         uri: `${WEB_API}/userinfo/cuserinfo?auToken=${userData.users_line_id}`
                                     },
+
                                 },
                                 {
                                     type: "button",
@@ -947,6 +970,7 @@ export const replyUserInfo = async ({
                                         uri: userTakecarepersonData ? `${WEB_API}/userinfo/puserinfo?auToken=${userData.users_line_id}` : `${WEB_API}/elderly_registration?auToken=${userData.users_line_id}`
                                     }
                                 }
+
                             ]
                         }
                     }
@@ -966,6 +990,7 @@ export const replyUserData = async ({
     replyToken,
     userData
 }: ReplyUserData) => {
+
     try {
         const profile = await getUserProfile(userData.users_line_id);
         const requestData = {
@@ -1015,9 +1040,11 @@ export const replyUserData = async ({
                                         layoutBoxBaseline("อำเภอ", `${userData.users_amphur || '-'}`),
                                         layoutBoxBaseline("จังหวัด", `${userData.users_province || '-'}`),
                                         layoutBoxBaseline("รหัสไปรษณีย์", `${userData.users_postcode || '-'}`),
-                                        layoutBoxBaseline("เบอร์โทรศัพท์มือถือ", `${userData.users_tel1 || '-'}`, 3, 6),
-                                        layoutBoxBaseline("เบอร์โทรศัพท์บ้าน", `${userData.users_tel_home || '-'}`, 3, 6),
+                                        layoutBoxBaseline("เบอร์โทรศัพท์มือถือ", `${userData.users_tel1 || '-'}`),
+                                        layoutBoxBaseline("เบอร์โทรศัพท์บ้าน", `${userData.users_tel_home || '-'}`),
+                                        //layoutBoxBaseline("LINE ID", userData.users_line_id),
                                     ]
+
                                 },
                                 {
                                     type: "button",
@@ -1097,6 +1124,8 @@ export const replyNotification = async ({
                                             text: message,
                                             color: "#555555",
                                             size: "md",
+                                            // decoration: "none",
+                                            // wrap      : true
                                         },
                                         {
                                             type: "span",
@@ -1126,6 +1155,7 @@ export const replyNotificationPostback = async ({
     type,
     message,
     replyToken,
+
 }: ReplyNotificationPostback) => {
     try {
         const requestData = {
@@ -1176,6 +1206,8 @@ export const replyNotificationPostback = async ({
                                             text: message,
                                             color: "#555555",
                                             size: "md",
+                                            // decoration: "none",
+                                            // wrap      : true
                                         },
                                         {
                                             type: "span",
@@ -1208,6 +1240,8 @@ export const replyNotificationPostback = async ({
                                             text: "*หมาย: ข้าพเจ้ายินยอมเปิดเผยข้อมูลตำแหน่งปัจจุบันของผู้ที่มีภาวะพึ่งพิง",
                                             color: "#FC0303",
                                             size: "md",
+                                            // decoration: "none",
+                                            // wrap      : true
                                         },
                                         {
                                             type: "span",
@@ -1236,6 +1270,7 @@ export const replyNotificationSOS = async ({
     message
 }: ReplyNotification) => {
     try {
+
         const requestData = {
             to: replyToken,
             messages: [
@@ -1284,6 +1319,8 @@ export const replyNotificationSOS = async ({
                                             text: message,
                                             color: "#555555",
                                             size: "md",
+                                            // decoration: "none",
+                                            // wrap      : true
                                         },
                                         {
                                             type: "span",
@@ -1315,6 +1352,7 @@ export const replyNotificationSendDocQuery = async ({
     userData: any;
 }) => {
     try {
+
         const requestData = {
             to: replyToken,
             messages: [
@@ -1363,7 +1401,10 @@ export const replyNotificationSendDocQuery = async ({
                                             text: "กรุณาตอบแบบสอบถามเพื่อให้ข้อมูลที่ถูกต้อง",
                                             color: "#555555",
                                             size: "md",
+                                            // decoration: "none",
+                                            // wrap      : true
                                         },
+
                                         {
                                             type: "span",
                                             text: " ",
@@ -1396,13 +1437,13 @@ export const replyNotificationSendDocQuery = async ({
         }
     }
 }
-
 export const replyNotificationPostbackTemp = async ({
     userId,
     takecarepersonId,
     type,
     message,
     replyToken,
+
 }: ReplyNotificationPostbackTemp) => {
     try {
         const requestData = {
@@ -1453,6 +1494,8 @@ export const replyNotificationPostbackTemp = async ({
                                             text: message,
                                             color: "#555555",
                                             size: "md",
+                                            // decoration: "none",
+                                            // wrap      : true
                                         },
                                         {
                                             type: "span",
@@ -1485,6 +1528,8 @@ export const replyNotificationPostbackTemp = async ({
                                             text: "*หมาย: ข้าพเจ้ายินยอมเปิดเผยข้อมูลตำแหน่งปัจจุบันของผู้ที่มีภาวะพึ่งพิง",
                                             color: "#FC0303",
                                             size: "md",
+                                            // decoration: "none",
+                                            // wrap      : true
                                         },
                                         {
                                             type: "span",
@@ -1507,13 +1552,13 @@ export const replyNotificationPostbackTemp = async ({
         }
     }
 }
-
 export const replyNotificationPostbackfall = async ({
     userId,
     takecarepersonId,
     type,
     message,
     replyToken,
+
 }: ReplyNotificationPostbackfall) => {
     try {
         const requestData = {
@@ -1564,6 +1609,8 @@ export const replyNotificationPostbackfall = async ({
                                             text: message,
                                             color: "#555555",
                                             size: "md",
+                                            // decoration: "none",
+                                            // wrap      : true
                                         },
                                         {
                                             type: "span",
@@ -1596,6 +1643,8 @@ export const replyNotificationPostbackfall = async ({
                                             text: "*หมาย: ข้าพเจ้ายินยอมเปิดเผยข้อมูลตำแหน่งปัจจุบันของผู้ที่มีภาวะพึ่งพิง",
                                             color: "#FC0303",
                                             size: "md",
+                                            // decoration: "none",
+                                            // wrap      : true
                                         },
                                         {
                                             type: "span",
@@ -1625,6 +1674,7 @@ export const replyNotificationPostbackHeart = async ({
     type,
     message,
     replyToken,
+
 }: ReplyNotificationPostbackHeart) => {
     try {
         const requestData = {
@@ -1675,6 +1725,8 @@ export const replyNotificationPostbackHeart = async ({
                                             text: message,
                                             color: "#555555",
                                             size: "md",
+                                            // decoration: "none",
+                                            // wrap      : true
                                         },
                                         {
                                             type: "span",
@@ -1707,6 +1759,8 @@ export const replyNotificationPostbackHeart = async ({
                                             text: "*หมาย: ข้าพเจ้ายินยอมเปิดเผยข้อมูลตำแหน่งปัจจุบันของผู้ที่มีภาวะพึ่งพิง",
                                             color: "#FC0303",
                                             size: "md",
+                                            // decoration: "none",
+                                            // wrap      : true
                                         },
                                         {
                                             type: "span",
