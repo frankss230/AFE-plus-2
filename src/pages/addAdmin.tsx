@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { sanitizeDigits } from '@/utils/inputSanitizers';
 
 const AddAdmin = () => {
   const [formData, setFormData] = useState({
@@ -25,9 +26,10 @@ const AddAdmin = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    const nextValue = name === 'users_moo' ? sanitizeDigits(value) : value;
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: nextValue,
     });
   };
 
@@ -126,6 +128,8 @@ const AddAdmin = () => {
                 name="users_moo"
                 value={formData.users_moo}
                 onChange={handleChange}
+                inputMode="numeric"
+                pattern="[0-9]*"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-pink-500"
               />
             </div>

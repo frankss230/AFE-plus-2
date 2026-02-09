@@ -67,6 +67,7 @@ interface ReplyUserData {
         users_province: string;
         users_postcode: string;
         users_tel1: string;
+        users_tel_home: string;
         users_status_id: {
             status_name: string;
         }
@@ -89,6 +90,7 @@ interface ReplySettingData {
         users_province: string;
         users_postcode: string;
         users_tel1: string;
+        users_tel_home: string;
         users_status_id: {
             status_name: string;
         }
@@ -114,6 +116,7 @@ interface ReplyLocationData {
         users_province: string;
         users_postcode: string;
         users_tel1: string;
+        users_tel_home: string;
         users_status_id: {
             status_name: string;
         }
@@ -860,7 +863,8 @@ export const replyUserInfo = async ({
                 layoutBoxBaseline("อำเภอ", `${userTakecarepersonData.takecare_amphur || '-'}`, 4, 5),
                 layoutBoxBaseline("จังหวัด", `${userTakecarepersonData.takecare_province || '-'}`, 4, 5),
                 layoutBoxBaseline("รหัสไปรษณีย์", `${userTakecarepersonData.takecare_postcode || '-'}`, 4, 5),
-                layoutBoxBaseline("เบอร์โทร", `${userTakecarepersonData.takecare_tel1 || '-'}`, 4, 5),
+                layoutBoxBaseline("เบอร์โทรศัพท์มือถือ", `${userTakecarepersonData.takecare_tel1 || '-'}`, 4, 5),
+                layoutBoxBaseline("เบอร์โทรศัพท์บ้าน", `${userTakecarepersonData.takecare_tel_home || '-'}`, 4, 5),
                 layoutBoxBaseline("โรคประจำตัว", `${userTakecarepersonData.takecare_disease || '-'}`, 4, 5),
                 layoutBoxBaseline("ยาที่ใช้ประจำ", `${userTakecarepersonData.takecare_drug || '-'}`, 4, 5),
             ]
@@ -912,7 +916,8 @@ export const replyUserInfo = async ({
                                         layoutBoxBaseline("อำเภอ", `${userData.users_amphur || '-'}`, 4, 5),
                                         layoutBoxBaseline("จังหวัด", `${userData.users_province || '-'}`, 4, 5),
                                         layoutBoxBaseline("รหัสไปรษณีย์", `${userData.users_postcode || '-'}`, 4, 5),
-                                        layoutBoxBaseline("เบอร์โทร", `${userData.users_tel1 || '-'}`, 4, 5),
+                                        layoutBoxBaseline("เบอร์โทรศัพท์มือถือ", `${userData.users_tel1 || '-'}`, 4, 5),
+                                        layoutBoxBaseline("เบอร์โทรศัพท์บ้าน", `${userData.users_tel_home || '-'}`, 4, 5),
                                     ]
 
                                 },
@@ -1036,6 +1041,7 @@ export const replyUserData = async ({
                                         layoutBoxBaseline("จังหวัด", `${userData.users_province || '-'}`),
                                         layoutBoxBaseline("รหัสไปรษณีย์", `${userData.users_postcode || '-'}`),
                                         layoutBoxBaseline("เบอร์โทรศัพท์มือถือ", `${userData.users_tel1 || '-'}`),
+                                        layoutBoxBaseline("เบอร์โทรศัพท์บ้าน", `${userData.users_tel_home || '-'}`),
                                         //layoutBoxBaseline("LINE ID", userData.users_line_id),
                                     ]
 
