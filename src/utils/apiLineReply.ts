@@ -199,8 +199,8 @@ export const getFlexTemplate = (
         {
             type: 'text',
             text: config.detail,
-            size: 'sm',
-            color: '#666666',
+            size: 'md',
+            color: '#050505',
             wrap: true,
         },
         { type: 'separator', margin: 'md' },
