@@ -203,7 +203,6 @@ export const getFlexTemplate = (
             size: 'sm',
             color: '#666666',
             wrap: true,
-            align:'center'
 
         },
         { type: 'separator', margin: 'md' },
