@@ -212,7 +212,7 @@ export const getFlexTemplate = (
             margin: 'md',
             spacing: 'sm',
             contents: [
-                baseline('ชื่อผู้สูงอายุ', name),
+                baseline('ชื่อผู้มีภาวะพึงพิง', name),
                 baseline('พิกัดปัจจุบัน', `${latitude}, ${longitude}`),
                 baseline('เวลาแจ้งเตือน', timeText),
             ],

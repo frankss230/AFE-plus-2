@@ -103,7 +103,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
         if (replyToken) {
           const timeText = moment().format('DD/MM/YYYY HH:mm');
-          const name = `${user.users_fname} ${user.users_sname}`;
+          const name = `${takecareperson.takecare_fname} ${takecareperson.takecare_sname}`;
           const postbackData =
             calculatedStatus === 2
               ? `userLineId=${replyToken}&takecarepersonId=${Number(takecare_id)}&type=safezone`
