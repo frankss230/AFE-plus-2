@@ -38,10 +38,7 @@ interface ReplyNoti {
     replyToken : string;
     message    : string;
     userIdAccept: string;
-<<<<<<< HEAD
-=======
     title?: string;
->>>>>>> c853cda (แจ้งเตือนของเคส)
     buttons?: ReplyNotiButton[];
 }
 
@@ -262,10 +259,7 @@ export const replyNoti = async ({
     replyToken,
     userIdAccept,
     message,
-<<<<<<< HEAD
-=======
     title,
->>>>>>> c853cda (แจ้งเตือนของเคส)
     buttons = [],
 }: ReplyNoti) => {
     try {
