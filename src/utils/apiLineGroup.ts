@@ -199,7 +199,7 @@ export const replyNotification = async ({
                                     {
                                         type: 'button',
                                         style: 'primary',
-                                        color: '#555555',
+                                        color: '#777777',
                                         height: 'sm',
                                         margin: 'xxl',
                                         action: {
@@ -319,7 +319,7 @@ export const replyNoti = async ({
                                 ...buttons.map((b) => ({
                                     type: "button",
                                     style: "primary",
-                                    color: '#555555',
+                                    color: '#777777',
                                     height: "sm",
                                     margin: "md",
                                     action:
