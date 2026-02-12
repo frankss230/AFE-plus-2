@@ -251,7 +251,7 @@ export const getFlexTemplate = (
                     {
                         type: "span",
                         text: "*หมาย: ข้าพเจ้ายินยอมเปิดเผยข้อมูลตำแหน่งปัจจุบันของผู้ที่มีภาวะพึ่งพิง",
-                        color: "#ff0000",
+                        color: "#484848",
                         size: "md",
                         // decoration: "none",
                         // wrap      : true
@@ -1201,18 +1201,22 @@ export const replyNotification = async ({
                             layout: "vertical",
                             contents: [
                                 {
-                                    type: "box",
-                                    layout: "vertical",
-                                    backgroundColor: "#1976D2",
-                                    paddingAll: "10px",
+                                    type: "text",
+                                    text: " ",
                                     contents: [
                                         {
-                                            type: "text",
+                                            type: "span",
                                             text: "สถานะเคส",
-                                            color: "#FFFFFF",
-                                            size: "md",
+                                            color: "#1976D2",
+                                            size: "xl",
                                             weight: "bold",
-                                            wrap: true
+                                            decoration: "none"
+                                        },
+                                        {
+                                            type: "span",
+                                            text: " ",
+                                            size: "xxl",
+                                            decoration: "none"
                                         }
                                     ]
                                 },
@@ -1279,18 +1283,22 @@ export const replyNotificationPostback = async ({
                             layout: "vertical",
                             contents: [
                                 {
-                                    type: "box",
-                                    layout: "vertical",
-                                    backgroundColor: "#1976D2",
-                                    paddingAll: "10px",
+                                    type: "text",
+                                    text: " ",
                                     contents: [
                                         {
-                                            type: "text",
+                                            type: "span",
                                             text: "สถานะเคส",
-                                            color: "#FFFFFF",
-                                            size: "md",
+                                            color: "#1976D2",
+                                            size: "xl",
                                             weight: "bold",
-                                            wrap: true
+                                            decoration: "none"
+                                        },
+                                        {
+                                            type: "span",
+                                            text: " ",
+                                            size: "xxl",
+                                            decoration: "none"
                                         }
                                     ]
                                 },
