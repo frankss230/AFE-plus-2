@@ -1,8 +1,15 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 import _ from 'lodash';
-import { replyNotificationPostbackHeart } from '@/utils/apiLineReply'; // สมมุติว่าใช้แจ้งเตือน LINE
-import moment from 'moment';
+import { replyNotificationPostbackfall } from '@/utils/apiLineReply';
+import axios from 'axios';
+import moment from 'moment'; // 
+
+const LINE_PUSH_MESSAGING_API = 'https://api.line.me/v2/bot/message/push';
+const LINE_HEADER = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${process.env.CHANNEL_ACCESS_TOKEN_LINE}`,
+};
 
 type Data = {
     message: string;
@@ -14,131 +21,111 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
         try {
             const body = req.body;
 
-            if (!body.uId || !body.takecare_id || !body.bpm) {
-                return res.status(400).json({ message: 'error', data: 'ไม่พบพารามิเตอร์ uId, takecare_id, bpm' });
-            }
-
-            if (_.isNaN(Number(body.uId)) || _.isNaN(Number(body.takecare_id)) || _.isNaN(Number(body.status))) {
-                return res.status(400).json({ message: 'error', data: 'พารามิเตอร์ uId, takecare_id, status ไม่ใช่ตัวเลข' });
+            // ตรวจสอบพารามิเตอร์เดิมจากไฟล์ที่ 1
+            if (
+                body.users_id === undefined || body.users_id === null ||
+                body.takecare_id === undefined || body.takecare_id === null ||
+                body.x_axis === undefined ||
+                body.y_axis === undefined ||
+                body.z_axis === undefined ||
+                body.fall_status === undefined ||
+                body.latitude === undefined ||
+                body.longitude === undefined
+            ) {
+                return res.status(400).json({ message: 'error', data: 'Missing parameter' });
             }
 
             const user = await prisma.users.findFirst({
-                where: { users_id: Number(body.uId) },
-                include: {
-                    users_status_id: { select: { status_name: true } }
-                }
+                where: { users_id: Number(body.users_id) }
             });
 
             const takecareperson = await prisma.takecareperson.findFirst({
-                where: {
-                    takecare_id: Number(body.takecare_id),
-                    takecare_status: 1
-                }
+                where: { takecare_id: Number(body.takecare_id), takecare_status: 1 }
             });
 
             if (!user || !takecareperson) {
                 return res.status(200).json({ message: 'error', data: 'ไม่พบข้อมูล user หรือ takecareperson' });
             }
 
-            // อ่านค่าการตั้งค่า HR
-            const settingHR = await prisma.heartrate_settings.findFirst({
-                where: {
-                    takecare_id: takecareperson.takecare_id,
-                    users_id: user.users_id
-                }
-            });
-
-            // เปรียบเทียบค่า HR กับที่ตั้งไว้ (เช็คแค่ max_bpm)
-            const bpmValue = Number(body.bpm);
-            let calculatedStatus = Number(body.status);
-
-            // เช็คเฉพาะค่าที่เกิน max_bpm เท่านั้น
-            if (settingHR && bpmValue > settingHR.max_bpm) {
-                calculatedStatus = 1; // เกิน max_bpm ถือว่าผิดปกติ
-            } else {
-                calculatedStatus = 0; // ปกติ
-            }
-
-            const status = calculatedStatus;
-
-            let noti_time: Date | null = null;
-            let noti_status: number | null = null;
-
-          
-            const lastHR = await prisma.heartrate_records.findFirst({
+            // --- เริ่ม Logic การกันแจ้งเตือนถี่ (ดึงมาจากไฟล์ที่ 2) ---
+            
+            // 1. หาข้อมูลการล้มล่าสุด [cite: 12]
+            const latest = await prisma.fall_records.findFirst({
                 where: {
                     users_id: user.users_id,
                     takecare_id: takecareperson.takecare_id
                 },
-                orderBy: {
-                    noti_time: 'desc'
-                }
+                orderBy: { noti_time: 'desc' }
             });
 
-         
-            if (
-                status === 1 &&
-                (!lastHR ||
-                    lastHR.noti_status !== 1 ||
-                    moment().diff(moment(lastHR.noti_time), 'minutes') >= 5)
-            ) {
-                const message = `คุณ ${takecareperson.takecare_fname} ${takecareperson.takecare_sname}\nชีพจรเกินค่าที่กำหนด: ${bpmValue} bpm`;
+            const fallStatus = Number(body.fall_status);
+            const previousStatus = latest ? Number(latest.fall_status) : null; // [cite: 14]
+            const lastNotiTime = latest?.noti_time ? moment(latest.noti_time) : null;
+
+            // 2. ตั้งค่าเงื่อนไข: จะแจ้งเตือนเมื่อ (สถานะเปลี่ยน) หรือ (สถานะเดิมแต่เกิน 5 นาที) 
+            const isCriticalStatus = (fallStatus === 2 || fallStatus === 3);
+            const isStatusChanged = previousStatus !== fallStatus; // 
+            const isTimeElapsed = !lastNotiTime || moment().diff(lastNotiTime, 'minutes') >= 5;
+
+            let noti_time: Date | null = null;
+            let noti_status: number = 0;
+
+            // 3. ตรวจสอบเงื่อนไขก่อนส่ง LINE
+            if (isCriticalStatus && (isStatusChanged || isTimeElapsed)) {
+                const message = fallStatus === 2
+                    ? `คุณ ${takecareperson.takecare_fname} ${takecareperson.takecare_sname} กด "ไม่โอเค" ขอความช่วยเหลือ`
+                    : `คุณ ${takecareperson.takecare_fname} ${takecareperson.takecare_sname} ไม่มีการตอบสนองภายใน 30 วินาที`;
 
                 const replyToken = user.users_line_id || '';
                 if (replyToken) {
-                    await replyNotificationPostbackHeart({
+                    // ส่งแจ้งเตือน Flex Message
+                    await replyNotificationPostbackfall({
                         replyToken,
                         userId: user.users_id,
                         takecarepersonId: takecareperson.takecare_id,
-                        type: 'heartrate',
+                        type: 'fall',
                         message
                     });
+
+                    // ส่งตำแหน่ง Location
+                    const locationRequest = {
+                        to: replyToken,
+                        messages: [{
+                            type: "location",
+                            title: `ตำแหน่งที่ล้มล่าสุด`,
+                            address: `ตำแหน่งที่ล้มของ ${takecareperson.takecare_fname} ${takecareperson.takecare_sname}`,
+                            latitude: Number(body.latitude),
+                            longitude: Number(body.longitude)
+                        }]
+                    };
+                    await axios.post(LINE_PUSH_MESSAGING_API, locationRequest, { headers: LINE_HEADER });
+
+                    noti_status = 1; // บันทึกว่าแจ้งเตือนแล้ว [cite: 14]
+                    noti_time = new Date(); // [cite: 13]
                 }
-
-                noti_status = 1;
-                noti_time = new Date();
             }
+            // --- จบ Logic การกันแจ้งเตือนถี่ ---
 
-            if (status === 0) {
-                noti_status = 0;
-                noti_time = null;
-                console.log("อัตราการเต้นของหัวใจอยู่ในระดับปกติ");
-            }
-
-          
-            if (lastHR) {
-                await prisma.heartrate_records.update({
-                    where: {
-                        heartrate_id: lastHR.heartrate_id
-                    },
-                    data: {
-                        bpm: bpmValue,
-                        record_date: new Date(),
-                        status: status,
-                        noti_time: noti_time,
-                        noti_status: noti_status
-      
-                    }
-                });
-            } else {
-                await prisma.heartrate_records.create({
-                    data: {
-                        users_id: user.users_id,
-                        takecare_id: takecareperson.takecare_id,
-                        bpm: bpmValue,
-                        record_date: new Date(),
-                        status: status,
-                        noti_time: noti_time,
-                        noti_status: noti_status
-            
-                    }
-                });
-            }
+            // 4. บันทึกข้อมูลลง Database (ใช้ตัวแปรเดิมทั้งหมด)
+            await prisma.fall_records.create({
+                data: {
+                    users_id: user.users_id,
+                    takecare_id: takecareperson.takecare_id,
+                    x_axis: Number(body.x_axis),
+                    y_axis: Number(body.y_axis),
+                    z_axis: Number(body.z_axis),
+                    fall_latitude: String(body.latitude),
+                    fall_longitude: String(body.longitude),
+                    fall_status: fallStatus,
+                    noti_time: noti_time,
+                    noti_status: noti_status
+                }
+            });
 
             return res.status(200).json({ message: 'success', data: 'บันทึกข้อมูลเรียบร้อย' });
 
         } catch (error) {
-            console.error("🚀 ~ API /sentHeartRate error:", error);
+            console.error("API Error:", error);
             return res.status(400).json({ message: 'error', data: error });
         }
     } else {
