@@ -220,24 +220,6 @@ export const replyNotification = async ({
                                             uri: `tel:${resUser.users_tel1 || '0000000000'}`
                                         },
                                     },
-                                    {
-                                        type: 'button',
-                                        style: 'primary',
-                                        height: 'sm',
-                                        margin: 'xxl',
-                                        color: '#f10000',
-                                        action: resTakecareperson.takecare_tel1
-                                            ? {
-                                                type: 'uri',
-                                                label: 'โทรหาผู้มีภาวะพึ่งพิง',
-                                                uri: `tel:${resTakecareperson.takecare_tel1}`
-                                            }
-                                            : {
-                                                type: 'message',
-                                                label: 'โทรหาผู้มีภาวะพึ่งพิง',
-                                                text: 'ไม่มีข้อมูลเบอร์โทรศัพท์ของผู้มีภาวะพึ่งพิง'
-                                            }
-                                    }
                                 ],
                             },
                         },
