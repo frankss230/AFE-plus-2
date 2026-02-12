@@ -15,11 +15,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
             const body = req.body;
 
             if (!body.uId || !body.takecare_id || !body.temperature_value) {
-                return res.status(400).json({ message: 'error', data: 'Missing parameter: uId, takecare_id, temperature_value' });
+                return res.status(400).json({ message: 'error', data: 'ไม่พบพารามิเตอร์ uId, takecare_id, temperature_value' });
             }
 
             if (_.isNaN(Number(body.uId)) || _.isNaN(Number(body.takecare_id)) || _.isNaN(Number(body.status))) {
-                return res.status(400).json({ message: 'error', data: 'uId, takecare_id, status must be numeric' });
+                return res.status(400).json({ message: 'error', data: 'พารามิเตอร์ uId, takecare_id, status ไม่ใช่ตัวเลข' });
             }
 
             const user = await prisma.users.findFirst({
@@ -39,7 +39,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
             });
 
             if (!user || !takecareperson) {
-                return res.status(200).json({ message: 'error', data: 'User or takecareperson not found' });
+                return res.status(200).json({ message: 'error', data: 'ไม่พบข้อมูล user หรือ takecareperson' });
             }
 
             const settingTemp = await prisma.temperature_settings.findFirst({
@@ -87,7 +87,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                 );
 
             if (shouldNotify) {
-                const message = `Patient ${takecareperson.takecare_fname} ${takecareperson.takecare_sname}\nBody temperature is above threshold`;
+                const message = `คุณ ${takecareperson.takecare_fname} ${takecareperson.takecare_sname} \nอุณหภูมิร่างกายเกินค่าที่กำหนด`;
 
                 const replyToken = user.users_line_id || '';
                 if (replyToken) {
@@ -110,7 +110,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
             if (status === 0) {
                 noti_status = 0;
                 noti_time = null;
-                console.log('Temperature is in normal range');
+                console.log("อุณหภูมิอยู่ในระดับปกติ");
             }
 
             if (temp) {
@@ -140,14 +140,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                 });
             }
 
-            return res.status(200).json({ message: 'success', data: 'Data saved successfully' });
+            return res.status(200).json({ message: 'success', data: 'บันทึกข้อมูลเรียบร้อย' });
 
         } catch (error) {
-            console.error('API /temperature error:', error);
+            console.error("🚀 ~ API /temperature error:", error);
             return res.status(400).json({ message: 'error', data: error });
         }
     } else {
         res.setHeader('Allow', ['PUT', 'POST']);
-        return res.status(405).json({ message: 'error', data: `Method ${req.method} not allowed` });
+        return res.status(405).json({ message: 'error', data: `วิธี ${req.method} ไม่อนุญาต` });
     }
 }
