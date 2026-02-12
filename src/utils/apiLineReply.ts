@@ -218,18 +218,47 @@ export const getFlexTemplate = (
     ];
 
     if (postbackData) {
-        contents.push({
-            type: 'button',
-            style: 'primary',
-            height: 'sm',
-            margin: 'xxl',
-            color: '#ff0000',  // เพิ่มบรรทัดนี้
-            action: {
-                type: 'postback',
-                label: 'ส่งขอความช่วยเหลือเพิ่มเติม',
-                data: postbackData,
+        contents.push(
+            {
+                type: 'button',
+                style: 'primary',
+                height: 'sm',
+                margin: 'xxl',
+                color: '#ff0000',  
+                action: {
+                    type: 'postback',
+                    label: 'ส่งขอความช่วยเหลือเพิ่มเติม',
+                    data: postbackData,
+                },
             },
-        });
+            {
+                type: 'button',
+                color: "#1976D2",
+                style: 'primary',
+                height: 'sm',
+                action: {
+                    type: 'uri',
+                    label: 'ดูแผนที่จากระบบ',
+                    // uri: `${WEB_API}/location?auToken=${userData.users_line_id}&idsafezone=${safezoneData.safezone_id}&idlocation=${locationData ? locationData.location_id : ''}`
+                },
+            },
+            {
+                type: "text",
+                wrap: true,
+                lineSpacing: "5px",
+                margin: "md",
+                contents: [
+                    {
+                        type: "span",
+                        text: "*หมาย: ข้าพเจ้ายินยอมเปิดเผยข้อมูลตำแหน่งปัจจุบันของผู้ที่มีภาวะพึ่งพิง",
+                        color: "#484848",
+                        size: "md",
+                        // decoration: "none",
+                        // wrap      : true
+                    }
+                ]
+            },
+        );
     }
 
     return {
@@ -1174,7 +1203,6 @@ export const replyNotification = async ({
                                 {
                                     type: "text",
                                     text: " ",
-                                    align: "center",
                                     contents: [
                                         {
                                             type: "span",
@@ -1199,7 +1227,6 @@ export const replyNotification = async ({
                                 {
                                     type: "text",
                                     text: " ",
-                                    align: "center",
                                     wrap: true,
                                     lineSpacing: "5px",
                                     margin: "md",
@@ -1258,7 +1285,6 @@ export const replyNotificationPostback = async ({
                                 {
                                     type: "text",
                                     text: " ",
-                                    align: "center",
                                     contents: [
                                         {
                                             type: "span",
@@ -1283,7 +1309,6 @@ export const replyNotificationPostback = async ({
                                 {
                                     type: "text",
                                     text: " ",
-                                    align: "center",
                                     wrap: true,
                                     lineSpacing: "5px",
                                     margin: "md",
@@ -1315,17 +1340,7 @@ export const replyNotificationPostback = async ({
                                         data: `userLineId=${replyToken}&takecarepersonId=${takecarepersonId}&type=${type}`,
                                     }
                                 },
-                                {
-                                    type: 'button',
-                                    color: "#1976D2",
-                                    style: 'primary',
-                                    height: 'sm',
-                                    action: {
-                                        type: 'uri',
-                                        label: 'ดูแผนที่จากระบบ',
-                                        //uri: `${WEB_API}/location?auToken=${userData.users_line_id}&idsafezone=${safezoneData.safezone_id}&idlocation=${locationData ? locationData.location_id : ''}`
-                                    }
-                                },
+                                
                                 {
                                     type: "text",
                                     text: " ",
