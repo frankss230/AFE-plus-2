@@ -344,6 +344,7 @@ export const postbackAccept = async (data: any) => {
                         replyToken: data.groupId,
                         userIdAccept: data.userIdAccept,
                         title: "สถานะเคส",
+                        titleColor: "#1976D2",
                         message: "มีผู้รับเคสช่วยเหลือแล้ว",
                     });
                     return null;
@@ -357,6 +358,7 @@ export const postbackAccept = async (data: any) => {
                         replyToken: data.groupId,
                         userIdAccept: data.userIdAccept,
                         title: "สถานะเคส",
+                        titleColor: "#1976D2",
                         message: "รับเคสช่วยเหลือแล้ว",
                         buttons: [
                             {
@@ -397,6 +399,7 @@ export const postbackClose = async (data: any) => {
                         replyToken: data.groupId,
                         userIdAccept: data.userIdAccept,
                         title: "สถานะเคส",
+                        titleColor: "#1976D2",
                         message: "มีผู้ปิดเคสช่วยเหลือแล้ว",
                     });
                     return null;
@@ -422,6 +425,7 @@ export const postbackClose = async (data: any) => {
                         replyToken: data.groupId,
                         userIdAccept: data.userIdAccept,
                         title: "สถานะเคส",
+                        titleColor: "#1976D2",
                         message: "ปิดเคสช่วยเหลือแล้ว",
                     });
                     return data.userLineId;

@@ -39,6 +39,7 @@ interface ReplyNoti {
     message    : string;
     userIdAccept: string;
     title?: string;
+    titleColor?: string;
     buttons?: ReplyNotiButton[];
 }
 
@@ -260,6 +261,7 @@ export const replyNoti = async ({
     userIdAccept,
     message,
     title,
+    titleColor,
     buttons = [],
 }: ReplyNoti) => {
     try {
@@ -279,8 +281,24 @@ export const replyNoti = async ({
                             type: "box",
                             layout: "vertical",
                             contents: [
-                                header1(title)[0],
-                                header1(title)[1],
+                                {
+                                    type: "text",
+                                    text: title || "แจ้งเตือนช่วยเหลือเพิ่มเติม",
+                                    contents: [
+                                        {
+                                            type: "span",
+                                            text: title || "แจ้งเตือนช่วยเหลือเพิ่มเติม",
+                                            color: titleColor || "#FC0303",
+                                            size: "xl",
+                                            weight: "bold",
+                                            decoration: "none",
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "separator",
+                                    margin: "md"
+                                },
                                 {
                                     type: "text",
                                     text: `คุณ ${displayName}`,
