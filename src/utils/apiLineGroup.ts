@@ -87,16 +87,18 @@ const layoutBoxBaseline = (label: string, text: string, flex1 = 2, flex2 = 5) =>
 
 const header1 = (title = "แจ้งเตือนช่วยเหลือเพิ่มเติม") =>  {
     const h1 = {
-        type: "text",
-        text: title,
+        type: "box",
+        layout: "vertical",
+        backgroundColor: "#1976D2",
+        paddingAll: "10px",
         contents: [
             {
-                type: "span",
+                type: "text",
                 text: title,
-                color: "#FC0303",
-                size: "xl",
+                color: "#FFFFFF",
+                size: "md",
                 weight: "bold",
-                decoration: "none"
+                wrap: true
             }
         ]
     }
