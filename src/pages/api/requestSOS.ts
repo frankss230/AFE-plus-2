@@ -142,6 +142,22 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
       await replyNotificationSOS({ replyToken, message });
     }
 
+    if (canEscalate === false) {
+      return res.status(409).json({
+        message: 'blocked',
+        data: user,
+        canEscalate,
+        blockReason,
+        sosDecision: {
+          decision,
+          distance,
+          safez_radiuslv2: safezRadiusLv2,
+          isOutsideSafezoneLv2,
+          hasActiveCase,
+        },
+      });
+    }
+
     return res.status(200).json({
       message: 'success',
       data: user,
