@@ -193,9 +193,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
             const result = await postbackSafezone({ userLineId: postback.userLineId, takecarepersonId: Number(postback.takecarepersonId) });
             console.log("Result for Safezone: ", result);
 
-            if (result === "already_accepted") {
-              // ✅ มีคนรับเคสแล้วและยังไม่ปิด → ไม่ส่งซ้ำ
-              console.log("Case already accepted, skipping duplicate notification.");
+            if (result === "already_sent") {
+              // ✅ มีเคสเปิดอยู่แล้ว → ไม่ส่งซ้ำ
+              console.log("Case already open, skipping duplicate notification.");
             } else if (result) {
               await replyNotification({ replyToken: result, message: 'ส่งคำขอความช่วยเหลือแล้ว' });
             }

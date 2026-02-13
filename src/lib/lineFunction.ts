@@ -45,39 +45,28 @@ export const postbackHeartRate = async ({
                     resUser.users_id
                 );
 
-                // ✅ เช็คว่ามีคนรับเคสแล้วและยังไม่ปิด → ส่งซ้ำไม่ได้
+                // ✅ เช็คว่ามีเคสที่ยังไม่ปิดอยู่ → ส่งซ้ำไม่ได้
                 if (
                     resExtendedHelp &&
-                    !resExtendedHelp.exted_closed_date &&
-                    resExtendedHelp.exten_received_date
+                    !resExtendedHelp.exted_closed_date
                 ) {
                     console.log(
-                        `Heart rate case already accepted. exten_id: ${resExtendedHelp.exten_id}`
+                        `Heart rate case still open. exten_id: ${resExtendedHelp.exten_id}`
                     );
-                    return "already_accepted";
+                    return "already_sent";
                 }
 
+                // ไม่มีเคส หรือเคสเดิมปิดแล้ว → สร้างใหม่
                 let extendedHelpId = null;
-
-                if (resExtendedHelp && !resExtendedHelp.exted_closed_date) {
-                    // มีเคสเดิมที่ยังไม่มีคนรับ → อัปเดตเคสเดิม
-                    extendedHelpId = resExtendedHelp.exten_id;
-                    await api.updateExtendedHelp({
-                        extenId: extendedHelpId,
-                        typeStatus: "sendAgain",
-                    });
-                } else {
-                    // ไม่มีเคส หรือเคสเดิมปิดแล้ว → สร้างใหม่
-                    const data = {
-                        takecareId: resTakecareperson.takecare_id,
-                        usersId: resUser.users_id,
-                        typeStatus: "save",
-                        safezLatitude: resSafezone.safez_latitude,
-                        safezLongitude: resSafezone.safez_longitude,
-                    };
-                    const resNewId = await api.saveExtendedHelp(data);
-                    extendedHelpId = resNewId;
-                }
+                const data = {
+                    takecareId: resTakecareperson.takecare_id,
+                    usersId: resUser.users_id,
+                    typeStatus: "save",
+                    safezLatitude: resSafezone.safez_latitude,
+                    safezLongitude: resSafezone.safez_longitude,
+                };
+                const resNewId = await api.saveExtendedHelp(data);
+                extendedHelpId = resNewId;
 
                 const responseLocation = await getLocation(
                     resTakecareperson.takecare_id,
@@ -85,6 +74,7 @@ export const postbackHeartRate = async ({
                     resSafezone.safezone_id
                 );
 
+                // ส่งการแจ้งเตือนกลับ
                 await replyNotification({
                     resUser,
                     resTakecareperson,
@@ -133,39 +123,28 @@ export const postbackFall = async ({
                     resUser.users_id
                 );
 
-                // ✅ เช็คว่ามีคนรับเคสแล้วและยังไม่ปิด → ส่งซ้ำไม่ได้
+                // ✅ เช็คว่ามีเคสที่ยังไม่ปิดอยู่ → ส่งซ้ำไม่ได้
                 if (
                     resExtendedHelp &&
-                    !resExtendedHelp.exted_closed_date &&
-                    resExtendedHelp.exten_received_date
+                    !resExtendedHelp.exted_closed_date
                 ) {
                     console.log(
-                        `Fall case already accepted. exten_id: ${resExtendedHelp.exten_id}`
+                        `Fall case still open. exten_id: ${resExtendedHelp.exten_id}`
                     );
-                    return "already_accepted";
+                    return "already_sent";
                 }
 
+                // ไม่มีเคส หรือเคสเดิมปิดแล้ว → สร้างใหม่
                 let extendedHelpId = null;
-
-                if (resExtendedHelp && !resExtendedHelp.exted_closed_date) {
-                    // มีเคสเดิมที่ยังไม่มีคนรับ → อัปเดตเคสเดิม
-                    extendedHelpId = resExtendedHelp.exten_id;
-                    await api.updateExtendedHelp({
-                        extenId: extendedHelpId,
-                        typeStatus: "sendAgain",
-                    });
-                } else {
-                    // ไม่มีเคส หรือเคสเดิมปิดแล้ว → สร้างใหม่
-                    const data = {
-                        takecareId: resTakecareperson.takecare_id,
-                        usersId: resUser.users_id,
-                        typeStatus: "save",
-                        safezLatitude: resSafezone.safez_latitude,
-                        safezLongitude: resSafezone.safez_longitude,
-                    };
-                    const resNewId = await api.saveExtendedHelp(data);
-                    extendedHelpId = resNewId;
-                }
+                const data = {
+                    takecareId: resTakecareperson.takecare_id,
+                    usersId: resUser.users_id,
+                    typeStatus: "save",
+                    safezLatitude: resSafezone.safez_latitude,
+                    safezLongitude: resSafezone.safez_longitude,
+                };
+                const resNewId = await api.saveExtendedHelp(data);
+                extendedHelpId = resNewId;
 
                 const responseLocation = await getLocation(
                     resTakecareperson.takecare_id,
@@ -173,6 +152,7 @@ export const postbackFall = async ({
                     resSafezone.safezone_id
                 );
 
+                // ส่งการแจ้งเตือนกลับ
                 await replyNotification({
                     resUser,
                     resTakecareperson,
@@ -181,6 +161,7 @@ export const postbackFall = async ({
                     locationData: responseLocation,
                 });
 
+                // ส่ง Line ID กลับเป็นตัวบ่งชี้ว่า success
                 return resUser.users_line_id;
             } else {
                 console.log(
@@ -200,6 +181,7 @@ export const postbackFall = async ({
     }
 };
 
+// ปรับให้ postbackTemp ทำงานเหมือน postbackSafezone
 export const postbackTemp = async ({
     userLineId,
     takecarepersonId,
@@ -221,39 +203,28 @@ export const postbackTemp = async ({
                     resUser.users_id
                 );
 
-                // ✅ เช็คว่ามีคนรับเคสแล้วและยังไม่ปิด → ส่งซ้ำไม่ได้
+                // ✅ เช็คว่ามีเคสที่ยังไม่ปิดอยู่ → ส่งซ้ำไม่ได้
                 if (
                     resExtendedHelp &&
-                    !resExtendedHelp.exted_closed_date &&
-                    resExtendedHelp.exten_received_date
+                    !resExtendedHelp.exted_closed_date
                 ) {
                     console.log(
-                        `Temperature case already accepted. exten_id: ${resExtendedHelp.exten_id}`
+                        `Temperature case still open. exten_id: ${resExtendedHelp.exten_id}`
                     );
-                    return "already_accepted";
+                    return "already_sent";
                 }
 
+                // ไม่มีเคส หรือเคสเดิมปิดแล้ว → สร้างใหม่
                 let extendedHelpId = null;
-
-                if (resExtendedHelp && !resExtendedHelp.exted_closed_date) {
-                    // มีเคสเดิมที่ยังไม่มีคนรับ → อัปเดตเคสเดิม
-                    extendedHelpId = resExtendedHelp.exten_id;
-                    await api.updateExtendedHelp({
-                        extenId: extendedHelpId,
-                        typeStatus: "sendAgain",
-                    });
-                } else {
-                    // ไม่มีเคส หรือเคสเดิมปิดแล้ว → สร้างใหม่
-                    const data = {
-                        takecareId: resTakecareperson.takecare_id,
-                        usersId: resUser.users_id,
-                        typeStatus: "save",
-                        safezLatitude: resSafezone.safez_latitude,
-                        safezLongitude: resSafezone.safez_longitude,
-                    };
-                    const resNewId = await api.saveExtendedHelp(data);
-                    extendedHelpId = resNewId;
-                }
+                const data = {
+                    takecareId: resTakecareperson.takecare_id,
+                    usersId: resUser.users_id,
+                    typeStatus: "save",
+                    safezLatitude: resSafezone.safez_latitude,
+                    safezLongitude: resSafezone.safez_longitude,
+                };
+                const resNewId = await api.saveExtendedHelp(data);
+                extendedHelpId = resNewId;
 
                 const responseLocation = await getLocation(
                     resTakecareperson.takecare_id,
@@ -261,6 +232,7 @@ export const postbackTemp = async ({
                     resSafezone.safezone_id
                 );
 
+                // ส่งการแจ้งเตือนกลับ
                 await replyNotification({
                     resUser,
                     resTakecareperson,
@@ -269,6 +241,7 @@ export const postbackTemp = async ({
                     locationData: responseLocation,
                 });
 
+                // ส่ง Line ID กลับเป็นตัวบ่งชี้ว่า success (เหมือน safezone)
                 return resUser.users_line_id;
             } else {
                 console.log(
@@ -288,6 +261,7 @@ export const postbackTemp = async ({
     }
 };
 
+//
 export const postbackSafezone = async ({
     userLineId,
     takecarepersonId,
@@ -309,39 +283,28 @@ export const postbackSafezone = async ({
                     resUser.users_id
                 );
 
-                // ✅ เช็คว่ามีคนรับเคสแล้วและยังไม่ปิด → ส่งซ้ำไม่ได้
+                // ✅ เช็คว่ามีเคสที่ยังไม่ปิดอยู่ → ส่งซ้ำไม่ได้
                 if (
                     resExtendedHelp &&
-                    !resExtendedHelp.exted_closed_date &&
-                    resExtendedHelp.exten_received_date
+                    !resExtendedHelp.exted_closed_date
                 ) {
                     console.log(
-                        `Safezone case already accepted. exten_id: ${resExtendedHelp.exten_id}`
+                        `Safezone case still open. exten_id: ${resExtendedHelp.exten_id}`
                     );
-                    return "already_accepted";
+                    return "already_sent";
                 }
 
+                // ไม่มีเคส หรือเคสเดิมปิดแล้ว → สร้างใหม่
                 let extendedHelpId = null;
-
-                if (resExtendedHelp && !resExtendedHelp.exted_closed_date) {
-                    // มีเคสเดิมที่ยังไม่มีคนรับ → อัปเดตเคสเดิม
-                    extendedHelpId = resExtendedHelp.exten_id;
-                    await api.updateExtendedHelp({
-                        extenId: extendedHelpId,
-                        typeStatus: "sendAgain",
-                    });
-                } else {
-                    // ไม่มีเคส หรือเคสเดิมปิดแล้ว → สร้างใหม่
-                    const data = {
-                        takecareId: resTakecareperson.takecare_id,
-                        usersId: resUser.users_id,
-                        typeStatus: "save",
-                        safezLatitude: resSafezone.safez_latitude,
-                        safezLongitude: resSafezone.safez_longitude,
-                    };
-                    const resExtendedHelpId = await api.saveExtendedHelp(data);
-                    extendedHelpId = resExtendedHelpId;
-                }
+                const data = {
+                    takecareId: resTakecareperson.takecare_id,
+                    usersId: resUser.users_id,
+                    typeStatus: "save",
+                    safezLatitude: resSafezone.safez_latitude,
+                    safezLongitude: resSafezone.safez_longitude,
+                };
+                const resExtendedHelpId = await api.saveExtendedHelp(data);
+                extendedHelpId = resExtendedHelpId;
 
                 const responeLocation = await getLocation(
                     resTakecareperson.takecare_id,
