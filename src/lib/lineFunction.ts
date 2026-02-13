@@ -270,33 +270,41 @@ export const postbackSafezone = async ({
                 resUser.users_id
             );
             if (resSafezone) {
+                const resExtendedHelp = await api.getExtendedHelp(
+                    resTakecareperson.takecare_id,
+                    resUser.users_id
+                );
+
+                // ✅ เช็คว่ามีเคสที่ยังไม่ถูกปิดอยู่หรือไม่
+                if (
+                    resExtendedHelp &&
+                    !resExtendedHelp.exted_closed_date &&
+                    !resExtendedHelp.exten_closed_user_id
+                ) {
+                    console.log(
+                        `Safezone request already pending. exten_id: ${resExtendedHelp.exten_id}`
+                    );
+                    // return "already_sent" เพื่อบอก webhook ว่าส่งซ้ำ
+                    return "already_sent";
+                }
+
+                // ไม่มีเคส หรือเคสเดิมถูกปิดแล้ว → สร้างใหม่
+                let extendedHelpId = null;
+                const data = {
+                    takecareId: resTakecareperson.takecare_id,
+                    usersId: resUser.users_id,
+                    typeStatus: "save",
+                    safezLatitude: resSafezone.safez_latitude,
+                    safezLongitude: resSafezone.safez_longitude,
+                };
+                const resExtendedHelpId = await api.saveExtendedHelp(data);
+                extendedHelpId = resExtendedHelpId;
+
                 const responeLocation = await getLocation(
                     resTakecareperson.takecare_id,
                     resUser.users_id,
                     resSafezone.safezone_id
                 );
-                const resExtendedHelp = await api.getExtendedHelp(
-                    resTakecareperson.takecare_id,
-                    resUser.users_id
-                );
-                let extendedHelpId = null;
-                if (resExtendedHelp) {
-                    extendedHelpId = resExtendedHelp.exten_id;
-                    await api.updateExtendedHelp({
-                        extenId: extendedHelpId,
-                        typeStatus: "sendAgain",
-                    });
-                } else {
-                    const data = {
-                        takecareId: resTakecareperson.takecare_id,
-                        usersId: resUser.users_id,
-                        typeStatus: "save",
-                        safezLatitude: resSafezone.safez_latitude,
-                        safezLongitude: resSafezone.safez_longitude,
-                    };
-                    const resExtendedHelpId = await api.saveExtendedHelp(data);
-                    extendedHelpId = resExtendedHelpId;
-                }
 
                 await replyNotification({
                     resUser,
@@ -319,7 +327,7 @@ export const postbackSafezone = async ({
         return null;
     } catch (error) {
         console.log("🚀 ~ postbackSafezone ~ error:", error);
-        return error;
+        return null;
     }
 };
 
