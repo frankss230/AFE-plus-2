@@ -77,12 +77,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         // เช็คกลุ่ม
         if (events.source.type === "group") {
           console.log("Group Event detected");
-          console.log("Group ID: ", events.source.groupId);
           const groupLine = await getGroupLine(events.source.groupId);
-          console.log("Group Line Data: ", groupLine);
           if (!groupLine) {
             await addGroupLine(events.source.groupId);
-            console.log("New Group Added with ID: ", events.source.groupId);
           }
         }
 
@@ -90,11 +87,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           console.log("Received message event");
 
           if (events.message.type === "text") {
-            console.log("Received message text: ", events.message.text);
-
+            // ... (ส่วนการจัดการ Text Message คงเดิม) ...
             if (events.message.text === "ลงทะเบียน") {
               const responseUser = await api.getUser(userId);
-              console.log("User Data: ", responseUser);
               if (responseUser) {
                 await replyUserData({ replyToken, userData: responseUser });
               } else {
@@ -102,7 +97,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
               }
             } else if (events.message.text === "การยืม-คืนอุปกรณ์") {
               const responseUser = await api.getUser(userId);
-              console.log("User Data: ", responseUser);
               if (responseUser) {
                 await replyMenuBorrowequipment({ replyToken, userData: responseUser });
               } else {
@@ -110,12 +104,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
               }
             } else if (events.message.text === "การเชื่อมต่อนาฬิกา") {
               const responseUser = await api.getUser(userId);
-              console.log("User Data: ", responseUser);
               if (responseUser) {
                 const encodedUsersId = encrypt(responseUser.users_id.toString());
-                console.log("Encoded User ID: ", encodedUsersId);
                 const responseUserTakecareperson = await getUserTakecareperson(encodedUsersId);
-                console.log("User Takecareperson Data: ", responseUserTakecareperson);
                 if (responseUserTakecareperson) {
                   await replyConnection({ replyToken, userData: responseUser, userTakecarepersonData: responseUserTakecareperson });
                 } else {
@@ -126,17 +117,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
               }
             } else if (events.message.text === "ดูตำแหน่งปัจจุบัน") {
               const responseUser = await api.getUser(userId);
-              console.log("User Data: ", responseUser);
               if (responseUser) {
                 const encodedUsersId = encrypt(responseUser.users_id.toString());
                 const responseUserTakecareperson = await getUserTakecareperson(encodedUsersId);
-                console.log("User Takecareperson Data: ", responseUserTakecareperson);
                 if (responseUserTakecareperson) {
                   const responeSafezone = await getSafezone(responseUserTakecareperson.takecare_id, responseUser.users_id);
-                  console.log("Safezone Data: ", responeSafezone);
                   if (responeSafezone) {
                     const responeLocation = await getLocation(responseUserTakecareperson.takecare_id, responseUser.users_id, responeSafezone.safezone_id);
-                    console.log("Location Data: ", responeLocation);
                     await replyLocation({ replyToken, userData: responseUser, userTakecarepersonData: responseUserTakecareperson, safezoneData: responeSafezone, locationData: responeLocation });
                   } else {
                     await replyMessage({ replyToken: req.body.events[0].replyToken, message: 'ยังไม่ได้ตั้งค่าเขตปลอดภัยไม่สามารถดูตำแหน่งปัจจุบันได้' });
@@ -149,14 +136,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
               }
             } else if (events.message.text === "ตั้งค่าเขตปลอดภัย") {
               const responseUser = await api.getUser(userId);
-              console.log("User Data: ", responseUser);
               if (responseUser) {
                 const encodedUsersId = encrypt(responseUser.users_id.toString());
                 const responseUserTakecareperson = await getUserTakecareperson(encodedUsersId);
-                console.log("User Takecareperson Data: ", responseUserTakecareperson);
                 if (responseUserTakecareperson) {
                   const responeSafezone = await getSafezone(responseUserTakecareperson.takecare_id, responseUser.users_id);
-                  console.log("Safezone Data: ", responeSafezone);
                   await replySetting({ replyToken, userData: responseUser, userTakecarepersonData: responseUserTakecareperson, safezoneData: responeSafezone });
                 } else {
                   await replyMessage({ replyToken: req.body.events[0].replyToken, message: 'ยังไม่ได้เพิ่มข้อมูลผู้มีภาวะพึ่งพิงไม่สามารถตั้งค่าเขตปลอดภัยได้' });
@@ -166,11 +150,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
               }
             } else if (events.message.text === "ดูข้อมูลผู้ใช้งาน") {
               const responseUser = await api.getUser(userId);
-              console.log("User Data: ", responseUser);
               if (responseUser) {
                 const encodedUsersId = encrypt(responseUser.users_id.toString());
                 const responseUserTakecareperson = await getUserTakecareperson(encodedUsersId);
-                console.log("User Takecareperson Data: ", responseUserTakecareperson);
                 await replyUserInfo({ replyToken, userData: responseUser, userTakecarepersonData: responseUserTakecareperson });
               } else {
                 await replyNotRegistration({ replyToken, userId });
@@ -185,44 +167,51 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
           // แปลงข้อมูลจาก postback
           const postback = parseQueryString(events.postback.data);
-          console.log("Parsed Postback: ", postback);
-
-          // เช็ค postback.type สำหรับกรณีทั้ง 'safezone' และ 'alert'
+          
           if (postback.type === 'safezone' || postback.type === 'alert') {
             console.log("Postback Triggered: ", postback);
-            const result = await postbackSafezone({ userLineId: postback.userLineId, takecarepersonId: Number(postback.takecarepersonId) });
+            
+            // เรียกใช้ postbackSafezone โดยส่ง extenId ไปด้วย (ถ้ามี)
+            const result = await postbackSafezone({ 
+                userLineId: postback.userLineId, 
+                takecarepersonId: Number(postback.takecarepersonId),
+                extenId: postback.extenId ? Number(postback.extenId) : undefined 
+            });
+            
             console.log("Result for Safezone: ", result);
 
-            // ✅ [แก้ไขส่วนนี้] เพิ่มการตอบกลับผู้ใช้ตามสถานะ
-            if (result === "in_progress") {
-               // กรณีมีการตอบรับเคสแล้ว
-               await replyMessage({ replyToken, message: 'ขณะนี้เจ้าหน้าที่ได้รับเรื่องและกำลังดำเนินการช่วยเหลือแล้ว ไม่สามารถส่งคำขอซ้ำได้' });
-            } else if (result === "already_sent") {
-               // กรณีส่งไปแล้ว แต่ยังไม่มีคนกดรับ
-               await replyMessage({ replyToken, message: 'คุณได้ส่งคำขอความช่วยเหลือไปแล้ว กรุณารอเจ้าหน้าที่ตอบรับ' });
+            if (result === "already_sent") {
+              // กรณี: ส่งไปแล้วและกำลังรอ
+              await replyMessage({ replyToken: events.replyToken, message: 'คำขอความช่วยเหลือถูกส่งไปแล้ว กรุณารอสักครู่' });
+            
+            } else if (result === "case_received") {
+              // กรณี: มีคนรับเคสแล้ว
+              await replyMessage({ replyToken: events.replyToken, message: 'มีเจ้าหน้าที่รับเรื่องแล้ว ไม่สามารถกดแจ้งเตือนซ้ำได้' });
+            
+            } else if (result === "case_closed") {
+              // กรณี: เคสปิดไปแล้ว (กดจากปุ่มเก่า)
+              await replyMessage({ replyToken: events.replyToken, message: 'เคสนี้ถูกปิดไปแล้ว หากมีเหตุฉุกเฉินใหม่กรุณากดแจ้งเหตุจากเมนูหลัก' });
+            
             } else if (result) {
-               // กรณีสร้างเคสใหม่สำเร็จ
-               await replyNotification({ replyToken: result, message: 'ส่งคำขอความช่วยเหลือแล้ว' });
+              // กรณี: สร้างเคสสำเร็จ (Result คือ Line ID หรือ token)
+              await replyNotification({ replyToken: result, message: 'ส่งคำขอความช่วยเหลือแล้ว' });
             }
+
           } else if (postback.type === 'accept') {
-            console.log("Accept Postback Triggered: ", postback);
+            // ... (Logic เดิม) ...
             let data = postback;
             data.groupId = events.source.groupId;
             data.userIdAccept = events.source.userId;
-            console.log("Data for Accept Postback: ", data);
             const replyToken = await postbackAccept(data);
-            console.log("Reply Token for Accept: ", replyToken);
             if (replyToken) {
               await replyNotification({ replyToken, message: 'ตอบรับเคสขอความช่วยเหลือแล้ว' });
             }
           } else if (postback.type === 'close') {
-            console.log("Close Postback Triggered: ", postback);
+            // ... (Logic เดิม) ...
             let data = postback;
             data.groupId = events.source.groupId;
             data.userIdAccept = events.source.userId;
-            console.log("Data for Close Postback: ", data);
             const replyToken = await postbackClose(data);
-            console.log("Reply Token for Close: ", replyToken);
             if (replyToken) {
               await replyNotification({ replyToken, message: 'ปิดเคสขอความช่วยเหลือแล้ว' });
             }
