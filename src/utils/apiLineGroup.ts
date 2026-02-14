@@ -41,6 +41,8 @@ interface ReplyNoti {
     title?: string;
     titleColor?: string;
     buttons?: ReplyNotiButton[];
+    buttonRows?: ReplyNotiButton[][];
+    detailRows?: ReplyNotiDetailRow[];
 }
 
 interface ReplyNotiButton {
@@ -49,6 +51,11 @@ interface ReplyNotiButton {
     data?: string;
     uri?: string;
     text?: string;
+}
+
+interface ReplyNotiDetailRow {
+    label: string;
+    value: string;
 }
 
 interface ReplySafezoneBackMessage {
@@ -262,11 +269,20 @@ export const replyNoti = async ({
     title,
     titleColor,
     buttons = [],
+    buttonRows = [],
+    detailRows = [],
 }: ReplyNoti) => {
     try {
         const profile = await getUserProfile(userIdAccept);
         const displayName = profile?.displayName || 'ผู้ใช้งาน';
         const messageText = message || 'ไม่มีข้อความ';
+        const mapButtonAction = (b: ReplyNotiButton) =>
+            b.type === "postback"
+                ? { type: "postback", label: b.label, data: b.data || "" }
+                : b.type === "uri"
+                    ? { type: "uri", label: b.label, uri: b.uri || "" }
+                    : { type: "message", label: b.label, text: b.text || "" };
+
 
         const requestData = {
             to: replyToken,
@@ -300,32 +316,72 @@ export const replyNoti = async ({
                                 },
                                 {
                                     type: "text",
-                                    text: `คุณ ${displayName}`,
+                                    text: detailRows.length ? messageText : `คุณ ${displayName}`,
                                     wrap: true,
                                     margin: "md",
                                     color: "#555555",
                                     size: "md"
                                 },
-                                {
-                                    type: "text",
-                                    text: messageText,
-                                    wrap: true,
-                                    margin: "md",
-                                    color: "#555555",
-                                    size: "md"
-                                },
+                                ...(detailRows.length
+                                    ? [{
+                                        type: "box",
+                                        layout: "vertical",
+                                        margin: "md",
+                                        spacing: "sm",
+                                        contents: detailRows.map((row) => ({
+                                            type: "box",
+                                            layout: "baseline",
+                                            contents: [
+                                                {
+                                                    type: "text",
+                                                    text: row.label,
+                                                    color: "#AAAAAA",
+                                                    size: "sm",
+                                                    flex: 3,
+                                                    wrap: true,
+                                                },
+                                                {
+                                                    type: "text",
+                                                    text: row.value || "-",
+                                                    color: "#111111",
+                                                    size: "sm",
+                                                    flex: 5,
+                                                    wrap: true,
+                                                    weight: "bold",
+                                                },
+                                            ],
+                                        })),
+                                    }]
+                                    : [{
+                                        type: "text",
+                                        text: messageText,
+                                        wrap: true,
+                                        margin: "md",
+                                        color: "#555555",
+                                        size: "md"
+                                    }]
+                                ),
                                 ...buttons.map((b) => ({
                                     type: "button",
                                     style: "primary",
                                     color: '#777777',
                                     height: "sm",
                                     margin: "md",
-                                    action:
-                                        b.type === "postback"
-                                            ? { type: "postback", label: b.label, data: b.data || "" }
-                                            : b.type === "uri"
-                                                ? { type: "uri", label: b.label, uri: b.uri || "" }
-                                                : { type: "message", label: b.label, text: b.text || "" },
+                                    action: mapButtonAction(b),
+                                })),
+                                ...buttonRows.map((row) => ({
+                                    type: "box",
+                                    layout: "horizontal",
+                                    margin: "md",
+                                    spacing: "sm",
+                                    contents: row.slice(0, 2).map((b) => ({
+                                        type: "button",
+                                        flex: 1,
+                                        style: "primary",
+                                        color: "#777777",
+                                        height: "sm",
+                                        action: mapButtonAction(b),
+                                    })),
                                 })),
                             ]
                         }
@@ -475,3 +531,4 @@ export const replySafezoneBackMessage = async ({
         throw error;
     }
 }
+

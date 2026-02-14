@@ -21,6 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
         const acceptedReplyToken = await postbackAccept({
             type: 'accept',
+            acceptMode: 'accept_call',
             extenId: Number(extenId),
             takecareId: Number(takecareId),
             userLineId: String(userLineId),

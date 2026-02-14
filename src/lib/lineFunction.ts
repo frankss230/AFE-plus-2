@@ -380,19 +380,59 @@ export const postbackAccept = async (data: any) => {
                         typeStatus: "received",
                         extenReceivedUserId: resUser.users_id,
                     });
+                    const closeCasePostbackData = `type=close&takecareId=${data.takecareId}&extenId=${data.extenId}&userLineId=${data.userLineId}`;
+                    const isAcceptCallFlow = data.acceptMode === "accept_call";
+                    let dependentFullName = "-";
+                    let dependentTel = "-";
+                    if (isAcceptCallFlow) {
+                        const dependentUser = await prisma.users.findFirst({
+                            where: { users_id: Number(resExtendedHelp.user_id) },
+                        });
+                        if (dependentUser) {
+                            dependentFullName = `${dependentUser.users_fname || ""} ${dependentUser.users_sname || ""}`.trim() || "-";
+                            dependentTel = dependentUser.users_tel1 || dependentUser.users_tel_home || "-";
+                        }
+                    }
                     await replyNoti({
                         replyToken: data.groupId,
                         userIdAccept: data.userIdAccept,
                         title: "สถานะเคส",
                         titleColor: "#1976D2",
-                        message: "รับเคสช่วยเหลือแล้ว",
-                        buttons: [
-                            {
-                                type: 'postback',
-                                label: 'ปิดเคสช่วยเหลือ',
-                                data: `type=close&takecareId=${data.takecareId}&extenId=${data.extenId}&userLineId=${data.userLineId}`,
-                            },
-                        ],
+                        message: isAcceptCallFlow
+                            ? "ข้อมูลผู้มีภาวะพึ่งพิง"
+                            : "",
+                        ...(isAcceptCallFlow
+                            ? {
+                                  detailRows: [
+                                      { label: "ชื่อ-สกุล", value: dependentFullName },
+                                      { label: "เบอร์โทร", value: dependentTel },
+                                  ],
+                              }
+                            : {}),
+                        ...(isAcceptCallFlow
+                            ? {
+                                  buttons: [
+                                      {
+                                          type: "postback",
+                                          label: "ปิดเคสอัตโนมัติ",
+                                          data: closeCasePostbackData,
+                                      },
+                                      {
+                                          type: "postback",
+                                          label: "ปิดเคสด้วยตัวเอง",
+                                          data: closeCasePostbackData,
+                                      },
+                                  ],
+                              }
+                            : {
+                                  buttons: [
+                                      {
+                                          type: "postback",
+                                          label: "ปิดเคสช่วยเหลือ",
+                                          data: closeCasePostbackData,
+                                      },
+                                  ],
+                              }),
                     });
                     return data.userLineId;
                 }
