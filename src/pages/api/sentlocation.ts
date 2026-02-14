@@ -138,21 +138,22 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                 orderBy: { exten_date: 'desc' },
               });
 
-              const hasActiveCase = Boolean(activeCase);
-
               // ส่งข้อความเฉพาะเมื่อมีเคสเปิดอยู่
-              if (hasActiveCase) {
+              if (activeCase) {
                 await replySafezoneBackMessage({
                   resUser: {
                     users_fname: user.users_fname,
                     users_sname: user.users_sname,
                     users_tel1: user.users_tel1 || '0000000000',
+                    users_line_id: user.users_line_id || '',
                   },
                   resTakecareperson: {
                     takecare_fname: takecareperson.takecare_fname,
                     takecare_sname: takecareperson.takecare_sname,
                     takecare_tel1: takecareperson.takecare_tel1 || '-',
+                    takecare_id: takecareperson.takecare_id,
                   },
+                  extenId: activeCase.exten_id,
                 });
               } else {
                 console.log('ไม่มีเคสเปิดอยู่ - ข้ามการส่งข้อความกลับเข้าเขต');

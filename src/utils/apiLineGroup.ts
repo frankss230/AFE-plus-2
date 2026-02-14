@@ -56,12 +56,15 @@ interface ReplySafezoneBackMessage {
         users_fname : string;
         users_sname : string;
         users_tel1  : string;
+        users_line_id: string;
     };
     resTakecareperson: {
         takecare_fname: string;
         takecare_sname: string;
         takecare_tel1 : string;
+        takecare_id   : number;
     };
+    extenId: number;
 }
 
 export const getUserProfile = async (userId: string) => {
@@ -342,6 +345,7 @@ export const replyNoti = async ({
 export const replySafezoneBackMessage = async ({
     resUser,
     resTakecareperson,
+    extenId,
 }: ReplySafezoneBackMessage) => {
     try {
         // ค้นหากลุ่มที่เปิดใช้งานจากฐานข้อมูล
@@ -359,6 +363,13 @@ export const replySafezoneBackMessage = async ({
             const userTel = resUser.users_tel1 || '0000000000';
             const takecareFullName = `${resTakecareperson.takecare_fname || ''} ${resTakecareperson.takecare_sname || ''}`.trim() || 'ไม่ระบุชื่อ';
             const takecareTel = resTakecareperson.takecare_tel1 || '-';
+            const liffAcceptCallUrl =
+                `${WEB_API}/liff/accept-call` +
+                `?extenId=${encodeURIComponent(String(extenId))}` +
+                `&takecareId=${encodeURIComponent(String(resTakecareperson.takecare_id))}` +
+                `&userLineId=${encodeURIComponent(resUser.users_line_id)}` +
+                `&groupId=${encodeURIComponent(groupLineId)}` +
+                `&tel=${encodeURIComponent(userTel)}`;
 
             const requestData = {
                 to: groupLineId,
@@ -443,8 +454,8 @@ export const replySafezoneBackMessage = async ({
                                         color: '#ff0000',
                                         action: {
                                             type: 'uri',
-                                            label: 'โทรฉุกเฉินหาผู้ดูแล',
-                                            uri: `tel:${userTel}`
+                                            label: 'รับเคสและโทร',
+                                            uri: liffAcceptCallUrl
                                         },
                                     },
                                 ],
